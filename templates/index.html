@@ -57,7 +57,7 @@
                         </div>
                         <div class="card-body">
                             <div class="row form-group">
-                                <div class="col-12">
+                                <div class="col-12" id="savedRoutesContainer">
                                     {% for route in routes %}
                                         <a href="{{route.href}}" class="badge badge-primary route-link" target="_blank">{{route.title}}</a>
                                     {% endfor %}
@@ -364,6 +364,7 @@
                     }
                     ls.bindTooltip(content).addTo(map);
                 });
+                printRoutesShortcuts();
             }
         </script>
 
@@ -419,6 +420,34 @@
             }
 
         </script>
+
+        <!-- Dyn routes -->
+        <script>
+            function printRoutesShortcuts() {
+                var html = '';
+                var ids = [];
+                var container = $('#savedRoutesContainer');
+                $.getJSON($SCRIPT_ROOT + '/all', {
+                }, function(data) {
+                    if (data[0] == "error") {
+                        alert(data[1]);
+                    } else {
+                        for (let index = 0; index < data.length; index++) {
+                            var id = data[index].href.split('/').at(-1);
+                            ids.push(id);
+                            html += '<a id="'+id+'" href="'+data[index].href+'" class="badge badge-primary route-link" target="_blank">'+data[index].title+'</a> ';
+                        }
+                        container.html(html);
+                        ids.forEach(element => {
+                            $('#'+element).on('click', getRouteByName);
+                        });
+                    }
+                }).fail(function() {
+                    alert('Error');
+                });
+            }
+        </script>
+
         <!-- Map JS -->
         <script>
             var map = L.map('mapid', {

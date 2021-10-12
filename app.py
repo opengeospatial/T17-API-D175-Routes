@@ -10,7 +10,7 @@ API_BASE_URL = 'https://dp21.skymantics.com'
 ROUTES = get_routes(API_BASE_URL)
 DEFAULT_LIMIT = 20
 TILESERVER_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
-pprint(ROUTES)
+
 @app.route('/')
 def index():
     if not request.root_url:
@@ -49,15 +49,14 @@ def get_route():
     # extracting data in json format
     json_api_response = api_response.json()
     # Get features 
-    pprint(json_api_response)
     json_fearures_list = json_api_response["features"]
     # Parsing to string
     features_list = json.dumps(json_fearures_list)
     # Returning string
     return features_list
 
-@app.route('/named_route')
-def get_routes():
+@app.route('/all')
+def all_routes():
     json_routes_list = get_routes(API_BASE_URL)
     # Parsing to string
     routes_list = json.dumps(json_routes_list)
@@ -73,7 +72,6 @@ def named_route():
     # extracting data in json format
     json_api_response = api_response.json()
     # Get features 
-    pprint(json_api_response)
     json_fearures_list = json_api_response["features"]
     # Parsing to string
     features_list = json.dumps(json_fearures_list)
