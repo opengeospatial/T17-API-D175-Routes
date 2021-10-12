@@ -51,13 +51,34 @@
 
             <div class="row">
                 <div class="col-4  d-flex align-items-stretch">
+                    <div class="card  w-100">
+                        <div class="card-header">
+                            Saved and named routes
+                        </div>
+                        <div class="card-body">
+                            <div class="row form-group">
+                                <div class="col-12">
+                                    {% for route in routes %}
+                                        <a href="{{route.href}}" class="badge badge-primary route-link" target="_blank">{{route.title}}</a>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4  d-flex align-items-stretch">
                         <div class="card  w-100">
                             <div class="card-header">
                                 Get route 
-                                <!-- <button class="badge btn badge-success start-btn">Start</button>
-                                <button class="badge disabled btn badge-warning end-btn">Finish</button> -->
                             </div>
                             <div class="card-body">
+                                <div class="row form-group">
+                                    <div class="col-12">
+                                        <label for="name">Name</label>
+                                        <input type="text" name="name" id="name" class="form-control">
+                                        <small>Use this field to create and save a new named route</small>
+                                    </div>
+                                </div>
                                 <div class="row form-group">
                                     <div class="col-6">
                                        <label for="start">Start</label>
@@ -149,7 +170,7 @@
 
             });
 
-            /** @function getCollectionItemList 
+            /** @function getRoutes 
              * Do an AJAX call to get all the items that are part of a given collection.
              *
              * @returns {JSON}|{boolean}
@@ -158,6 +179,7 @@
                 refreshMap();
                 var start = JSON.parse($('#start').val());
                 var finish = JSON.parse($('#end').val());
+                var name = $('#name').val();
 
                 var $this = $(this);
                 var loadingText = '<i class="fa fa-circle-o-notch fa-spin"></i> Loading...';
@@ -165,10 +187,10 @@
                     $this.data('original-text', $(this).html());
                     $this.html(loadingText);
                     $this.prop('disabled', true);
-
                 }
                 $.getJSON($SCRIPT_ROOT + 'route', {
-                    waypoints: JSON.stringify([start, finish])
+                    waypoints: JSON.stringify([start, finish]),
+                    route_name: name
                 }, function(data) {
                     if (data[0] == "error") {
                         alert(data[1]);
@@ -253,6 +275,7 @@
                 // Put beautified json
                 // $(target).text(JSON.stringify(data, null, 4));
                 $("#selectedCollectionId").text(data.id)
+                console.log(data);
                 $(target).empty().simpleJson({ jsonObject: data });
             }
 
@@ -344,6 +367,58 @@
             }
         </script>
 
+        <!-- Named routes -->
+        <script>
+            $('.route-link').on('click', getRouteByName);
+            
+            /** @function getRouteByName 
+             * Do an AJAX call to get all the items that are part of a given collection.
+             *
+             * @returns {JSON}|{boolean}
+             */
+             function getRouteByName(e){
+                e.preventDefault();
+                refreshMap();
+                var url = this.href;
+                var $this = $(this);
+                var loadingText = '<i class="fa fa-circle-o-notch fa-spin"></i> Loading...';
+                if ($(this).html() !== loadingText) {
+                    $this.data('original-text', $(this).html());
+                    $this.html(loadingText);
+                    $this.prop('disabled', true);
+                }
+                $.getJSON($SCRIPT_ROOT + '/route/named', {
+                    route_link: url.split('/').at(-1)
+                }, function(data) {
+                    if (data[0] == "error") {
+                        alert(data[1]);
+                        $this.html($this.data('original-text'));
+                        $this.removeAttr('disabled');
+                    } else {
+                        /** @function showJSONOutput */
+                        showJSONOutput(data, "#result-items");
+                        /** @function saveObjects */
+                        saveObjects(data);
+                        /** @function renderObjects */
+                        renderObjects();
+                        return data;
+                    }
+                }).done(function (data) {
+                    if (data[0] !== "error") {
+                        $this.html($this.data('original-text'));
+                        $this.removeAttr('disabled');
+                        $('#getRouteJsonOutput').removeAttr('disabled');
+                    }
+                }).fail(function() {
+                    $this.html($this.data('original-text'));
+                    $this.removeAttr('disabled');
+                    alert('Error');
+                });
+
+                return false;
+            }
+
+        </script>
         <!-- Map JS -->
         <script>
             var map = L.map('mapid', {
