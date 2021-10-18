@@ -47,7 +47,8 @@ def get_route():
         'waypoints':json.loads(waypoints),
         'name': route_name,
     }
-
+    
+    # Optional params 
     if (request.args.get('max_height') != '' or request.args.get('max_height') != None):
         max_height_from_request = request.args.get('max_height')
         params['maxHeight'] =  max_height_from_request
@@ -56,10 +57,12 @@ def get_route():
         max_width_from_request = request.args.get('max_width')
         params['maxWeight'] =  max_width_from_request
 
+    if (request.args.get('preference') != '' or request.args.get('preference') != None):
+        preference_from_request = request.args.get('preference')
+        params['preference'] =  preference_from_request
+
     # sending get request and saving the response as response object
     api_response = requests.post(url = URL, json = params)
-    pprint(params)
-    pprint(api_response.url)
     # extracting data in json format
     json_api_response = api_response.json()
     # Get features 

@@ -90,6 +90,15 @@
                                     </div>
                                 </div>
                                 <div class="row form-group">
+                                    <div class="col-12">
+                                        <label for="preference">Preference</label>
+                                        <select name="preference" id="preference" class="form-control">
+                                            <option value="fastest">Fastest</option>
+                                            <option value="shortest">Shortest</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row form-group">
                                     <div class="col-6">
                                        <label for="start">Start</label>
                                        <input type="text" name="start" id="start" class="form-control">
@@ -192,6 +201,7 @@
                 var maxHeight =  $('#max-height').val();
                 var maxWidth =  $('#max-width').val();
                 var name = $('#name').val();
+                var preferenceType = $('#preference').val();
 
                 var $this = $(this);
                 var loadingText = '<i class="fa fa-circle-o-notch fa-spin"></i> Loading...';
@@ -204,7 +214,8 @@
                     waypoints: JSON.stringify([start, finish]),
                     route_name: name,
                     max_height: (maxHeight.length > 0) ? maxHeight : '',
-                    max_width: (maxWidth.length > 0) ? maxWidth : ''
+                    max_width: (maxWidth.length > 0) ? maxWidth : '',
+                    preference: (preferenceType.length > 0) ? preferenceType : ''
                 }, function(data) {
                     if (data[0] == "error") {
                         alert(data[1]);
