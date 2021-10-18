@@ -30,22 +30,36 @@ def get_route():
         waypoints_from_request = request.args.get('waypoints')
     else:
         waypoints_from_request = None
+
     if (request.args.get('route_name') != '' or request.args.get('route_name') != None):
         route_name_from_request = request.args.get('route_name')
     else:
         route_name_from_request = None
+
     # Get the waypoints from the request
     waypoints = waypoints_from_request
     # Get the route name from the request
     route_name = route_name_from_request
+
     # Set the API resource url
     URL = API_BASE_URL+"/routes"
-    PARAMS = {
+    params = {
         'waypoints':json.loads(waypoints),
-        'name': route_name
+        'name': route_name,
     }
+
+    if (request.args.get('max_height') != '' or request.args.get('max_height') != None):
+        max_height_from_request = request.args.get('max_height')
+        params['maxHeight'] =  max_height_from_request
+
+    if (request.args.get('max_width') != '' or request.args.get('max_width') != None):
+        max_width_from_request = request.args.get('max_width')
+        params['maxWeight'] =  max_width_from_request
+
     # sending get request and saving the response as response object
-    api_response = requests.post(url = URL, json = PARAMS)
+    api_response = requests.post(url = URL, json = params)
+    pprint(params)
+    pprint(api_response.url)
     # extracting data in json format
     json_api_response = api_response.json()
     # Get features 
