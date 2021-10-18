@@ -6,7 +6,7 @@ from pprint import pprint
 '''
 def get_routes(landing_page):
     routes = []
-    url = landing_page+'/rimac/routes'
+    url = landing_page+'/routes'
 
     try:
         api_response = requests.get(url = url)

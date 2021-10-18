@@ -6,7 +6,7 @@ from helpers import get_routes
 from flask import Flask, render_template, request, url_for
 app = Flask(__name__)
 
-API_BASE_URL = 'https://dp21.skymantics.com'
+API_BASE_URL = ' https://dp21.skymantics.com/rimac'
 ROUTES = get_routes(API_BASE_URL)
 DEFAULT_LIMIT = 20
 TILESERVER_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
@@ -66,7 +66,7 @@ def all_routes():
 @app.route('/route/named')
 def named_route():
     route_id = request.args.get('route_link')
-    target_url = API_BASE_URL+'/rimac/routes/'+route_id
+    target_url = API_BASE_URL+'/routes/'+route_id
     # sending get request and saving the response as response object
     api_response = requests.get(url = target_url)
     # extracting data in json format
