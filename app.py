@@ -1,12 +1,13 @@
 import json
 import requests
 from pprint import pp, pprint
-from helpers import get_routes
+from helpers import get_routes, get_api_name
 
 from flask import Flask, render_template, request, url_for
 app = Flask(__name__)
 
-API_BASE_URL = ' https://dp21.skymantics.com/rimac'
+API_BASE_URL = 'https://dp21.skymantics.com/rimac'
+API_NAME = get_api_name(API_BASE_URL)
 ROUTES = get_routes(API_BASE_URL)
 DEFAULT_LIMIT = 20
 TILESERVER_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
@@ -19,7 +20,8 @@ def index():
     return render_template(
         'index.html', 
         tileserver=TILESERVER_URL,
-        routes=ROUTES
+        routes=ROUTES,
+        name=API_NAME,
     )
 
 @app.route('/route', defaults={
