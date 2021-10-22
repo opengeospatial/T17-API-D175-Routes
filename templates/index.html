@@ -154,6 +154,7 @@
         <script>
             var map;
             $SCRIPT_ROOT = {{request.root_url|tojson|safe}};
+            $SCRIPT_ZOOM = {{zoom}};
         </script>
 
         <!-- Routes JS -->
@@ -477,7 +478,7 @@
         <script>
             var map = L.map('mapid', {
                     scrollWheelZoom: false,
-                }).setView([-12.062298337291873,-77.03762102334021], 12);
+                }).setView([-12.062298337291873,-77.03762102334021], $SCRIPT_ZOOM);
                 // Get map tiles from localhost or OSM
                 // L.tileLayer('http://3.143.92.80/tileserver/{z}/{x}/{y}.png', {
                 var tilesFrom = "{{tileserver}}"
@@ -499,7 +500,7 @@
                 // Set map center and block zoom
                 map = L.map('mapid', {
                     scrollWheelZoom: false,
-                }).setView([-12.062298337291873,-77.03762102334021], 12);
+                }).setView([-12.062298337291873,-77.03762102334021], $SCRIPT_ZOOM);
                 var tilesFrom = "{{tileserver}}"
                 L.tileLayer(tilesFrom, {
                     maxZoom: 19,
