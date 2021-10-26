@@ -8,12 +8,12 @@ app = Flask(__name__)
 
 API_BASE_URL = 'https://dp21.skymantics.com/rimac'
 API_NAME = get_api_name(API_BASE_URL)
-ROUTES = get_routes(API_BASE_URL)
 DEFAULT_ZOOM = 12
 TILESERVER_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
 
 @app.route('/')
 def index():
+    ROUTES = get_routes(API_BASE_URL)
     if not request.root_url:
         # this assumes that the 'index' view function handles the path '/'
         request.root_url = url_for('index', _external=True)
