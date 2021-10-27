@@ -9,6 +9,7 @@ app = Flask(__name__)
 API_BASE_URL = 'https://dp21.skymantics.com/rimac'
 API_NAME = get_api_name(API_BASE_URL)
 DEFAULT_ZOOM = 12
+DEFAULT_CENTER = [0,0]
 TILESERVER_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
 
 @app.route('/')
@@ -22,7 +23,8 @@ def index():
         tileserver=TILESERVER_URL,
         routes=ROUTES,
         name=API_NAME,
-        zoom=DEFAULT_ZOOM
+        zoom=DEFAULT_ZOOM,
+        center=DEFAULT_CENTER
     )
 
 @app.route('/route', defaults={
