@@ -10,7 +10,7 @@ This client is fully deployed by executing a simple bash script, or by executing
 # Client settings:
 TILESERVER=https://tile.openstreetmap.org/{z}/{x}/{y}.png
 DEFAULT_ZOOM=10
-DEFAULT_CENTER=[-77.044092, -12.031304]
+DEFAULT_CENTER=[-77.044092,-12.031304]
 API_ENDPOINT=https://dp21.skymantics.com/rimac
 # ENV settings
 PYTHON_PATH=/usr/bin/python3
