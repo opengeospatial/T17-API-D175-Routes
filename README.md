@@ -17,7 +17,7 @@ PYTHON_PATH=/usr/bin/python3
 PROJECT_PATH=./routes-ogc-api-client
 
 # Download repo
-git clone https://github.com/opengeospatial/T17-API-D175-Features.git $PROJECT_PATH
+git clone https://github.com/opengeospatial/T17-API-D175-Routes.git $PROJECT_PATH
 # Generate virtual env.
 virtualenv --python=$PYTHON_PATH $PROJECT_PATH
 # Go inside the repo folder
