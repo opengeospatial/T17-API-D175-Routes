@@ -176,12 +176,6 @@
              */
             var lines = [];
             /**
-             * The polygons ready to be rendered.
-             *
-             * @type {array}
-             */
-            var polygons = [];
-            /**
              * The points ready to be rendered.
              *
              * @type {array}
@@ -264,16 +258,6 @@
             function saveObjects(data) {
                 data.forEach(element => {
                     switch (element.geometry.type) {
-                        case "Polygon":
-                            var obj = {
-                                type: element.geometry.type,
-                                coordinates: element.geometry.coordinates,
-                                properties: element.properties,
-                                id: element.id,
-                            }
-                            polygons.push(obj);
-                            break;
-                        
                         case "Point":
                             if (element.properties.type == 'start' || element.properties.type == 'end') {
                                 var obj = {
@@ -321,30 +305,6 @@
              * @returns {void}
              */
             function renderObjects() {
-                // Render polygons
-                polygons.forEach(function(polygon) {
-                    // Add to map custom polygons
-                    var pol = L.polygon(polygon.coordinates, {
-                        weight: 1,
-                        fillOpacity: 0.7,
-                        color: 'red',
-                        dashArray: '3'
-                    }).addTo(map);
-                    // Add tooltip to the polygon
-                    var content = '<h4>'+polygon.id+' properties:</h4>';
-                    var counter = 0;
-                    for(var key in polygon.properties) {
-                        if(polygon.properties.hasOwnProperty(key) && counter < 5) {
-                            content += '<p>'+key+':'+polygon.properties[key]+'<p>';
-                            counter++;
-                        }
-                    }
-                    pol.bindTooltip(content).addTo(map);
-                    // Get the polygon center
-                    var center = pol.getCenter();
-                    // Fly to the polygon center
-                    map.flyTo([center.lat, center.lng], 9);
-                });
                 // Render points
                 points.forEach(function(point) {
                     var pt = L.geoJSON(point, {
@@ -378,7 +338,7 @@
                 });
                 // Render lineStrings
                 lineStrings.forEach(function(lineString) {
-                    // TODO: Why do we need to reverse the coordinates array?
+                    // TODO: Why do we need to reverse the coordinates array?  Because we need to use long,lat instead of lat,long
                     // Reverse the corrdinates 
                     // (FIXME)
                     var coordinates = [];
@@ -389,7 +349,7 @@
                     // (ENDFIXME)
                     // Add to map custom lineStrings
                     var ls = L.polyline(coordinates).addTo(map);
-                    // Add tooltip to the polygon
+                    // Add tooltip
                     var content = '<h4>'+lineString.id+' properties:</h4>';
                     var counter = 0;
                     for(var key in lineString.properties) {
@@ -488,9 +448,8 @@
         <script>
             var map = L.map('mapid', {
                     scrollWheelZoom: false,
-                }).setView($DEFAULT_CENTER, $SCRIPT_ZOOM);
-                // Get map tiles from localhost or OSM
-                // L.tileLayer('http://3.143.92.80/tileserver/{z}/{x}/{y}.png', {
+                    // This is just a workaround to be used with long,lat instead of lat,long
+                }).setView([$DEFAULT_CENTER[1], $DEFAULT_CENTER[0]], $SCRIPT_ZOOM);
                 var tilesFrom = "{{tileserver}}"
                 L.tileLayer(tilesFrom, {
                     maxZoom: 19,
@@ -510,7 +469,8 @@
                 // Set map center and block zoom
                 map = L.map('mapid', {
                     scrollWheelZoom: false,
-                }).setView($DEFAULT_CENTER, $SCRIPT_ZOOM);
+                    // This is just a workaround to be used with long,lat instead of lat,long
+                }).setView([$DEFAULT_CENTER[1], $DEFAULT_CENTER[0]], $SCRIPT_ZOOM);
                 var tilesFrom = "{{tileserver}}"
                 L.tileLayer(tilesFrom, {
                     maxZoom: 19,
@@ -547,7 +507,6 @@
                     loadMap();
                     points = [];
                     lineStrings = [];
-                    polygons = [];
                 });
             }
         </script>
