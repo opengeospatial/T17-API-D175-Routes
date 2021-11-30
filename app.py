@@ -15,6 +15,7 @@ TILESERVER_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
 @app.route('/')
 def index():
     ROUTES = get_routes(API_BASE_URL)
+    pprint(ROUTES)
     if not request.root_url:
         # this assumes that the 'index' view function handles the path '/'
         request.root_url = url_for('index', _external=True)
@@ -99,4 +100,15 @@ def named_route():
     features_list = json.dumps(json_fearures_list)
     # Returning string
     return features_list
+    
+@app.route('/route/delete')
+def delete_route():
+    route_id = request.args.get('route_link')
+    target_url = API_BASE_URL+'/routes/'+route_id
+    # sending get request and saving the response as response object
+    api_response = requests.delete(url = target_url)
+    # extracting data in json format
+    json_api_response = api_response.json()
+    # TODO: Improve the returned data
+    return dict(result = 'OK')
     
