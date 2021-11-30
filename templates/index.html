@@ -188,6 +188,9 @@
              */
             var lineStrings = [];
 
+            startMarker = {};
+            endMarker = {};
+
             $(function() {
                 // get collection list
                 $('button#getRoute').bind('click', getRoutes)
@@ -457,12 +460,19 @@
                 }).addTo(map);
 
                 map.on('click',function(e){
-                    console.log(e.latlng);
                     if ($('#start').hasClass('focus')) {
                         $('#start').val(JSON.stringify([e.latlng.lng, e.latlng.lat]));
+                        if (startMarker != undefined) {
+                            map.removeLayer(startMarker);
+                        };
+                        startMarker = L.marker(e.latlng).addTo(map);
                     }
                     if ($('#end').hasClass('focus')) {
                         $('#end').val(JSON.stringify([e.latlng.lng, e.latlng.lat]));
+                        if (endMarker != undefined) {
+                            map.removeLayer(endMarker);
+                        }
+                        endMarker = L.marker(e.latlng).addTo(map);
                     }
             });
             function loadMap() {
@@ -478,12 +488,19 @@
                 }).addTo(map);
 
                 map.on('click',function(e){
-                    console.log(e.latlng);
                     if ($('#start').hasClass('focus')) {
                         $('#start').val(JSON.stringify([e.latlng.lng, e.latlng.lat]));
+                        if (startMarker != undefined) {
+                            map.removeLayer(startMarker);
+                        };
+                        startMarker = L.marker(e.latlng).addTo(map);
                     }
                     if ($('#end').hasClass('focus')) {
                         $('#end').val(JSON.stringify([e.latlng.lng, e.latlng.lat]));
+                        if (endMarker != undefined) {
+                            map.removeLayer(endMarker);
+                        }
+                        endMarker = L.marker(e.latlng).addTo(map);
                     }
                 });
             }
