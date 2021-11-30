@@ -24,10 +24,13 @@
         <!-- Custom -->
         <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
         <script src="{{ url_for('static', filename='main.js') }}"></script>
+
+        <!-- Material icons -->
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     </head>
 
     <body>
-        <div class="container-fluid ">
+        <div class="container-fluid">
             <div class="row">
                 <!-- toolbar -->
                 <div class="col-12">
@@ -50,23 +53,7 @@
             </div>
 
             <div class="row">
-                <div class="col-4  d-flex align-items-stretch">
-                    <div class="card  w-100">
-                        <div class="card-header">
-                            Saved and named routes
-                        </div>
-                        <div class="card-body">
-                            <div class="row form-group">
-                                <div class="col-12" id="savedRoutesContainer">
-                                    {% for route in routes %}
-                                        <a href="{{route.href}}" class="badge badge-primary route-link" target="_blank">{{route.title}}</a>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-4  d-flex align-items-stretch">
+                <div class="col-6  d-flex align-items-stretch">
                         <div class="card  w-100">
                             <div class="card-header">
                                 Get route 
@@ -98,7 +85,7 @@
                         </div>
                 </div>
 
-                <div class="col-4  d-flex align-items-stretch">
+                <div class="col-6  d-flex align-items-stretch">
                     <div class="card  w-100">
                         <div class="card-header">
                             Set route settings
@@ -125,6 +112,61 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <hr>
+                </div>
+            </div>
+        </div>
+
+        <div class="container-fluid ">
+            <div class="row">
+                <div class="col-12 d-flex align-items-stretch">
+                    <div class="card  w-100">
+                        <div class="card-header">
+                            Saved and named routes
+                        </div>
+                        <div class="card-body">
+                            <div class="row form-group">
+                                <div class="col-12" id="savedRoutesContainer">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr class="small">
+                                                <th>ID</th>
+                                                <th>Name</th>
+                                                <th class="text-center">Show</th>
+                                                <th class="text-center">Delete</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="routes">
+                                        {% for route in routes %}
+                                            <tr class="small">
+                                                <td><span>{{route.id}}</span></td>
+                                                <td>
+                                                    <span>{{route.title}}</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <a href="{{route.href}}" class="route-link" target="_blank">
+                                                        <span class="btn btn-primary btn-sm md-12 material-icons">visibility</span>
+                                                    </a>
+                                                </td>
+                                                <td class="text-center">
+                                                    <a href="{{route.href}}" class="route-link-remove" target="_blank">
+                                                        <span class="btn btn-danger btn-sm md-12 material-icons">delete_outline</span>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -187,6 +229,9 @@
              * @type {array}
              */
             var lineStrings = [];
+
+            startMarker = {};
+            endMarker = {};
 
             $(function() {
                 // get collection list
@@ -367,6 +412,7 @@
         <!-- Named routes -->
         <script>
             $('.route-link').on('click', getRouteByName);
+            $('.route-link-remove').on('click', deleteRouteByName);
             
             /** @function getRouteByName 
              * Do an AJAX call to get all the items that are part of a given collection.
@@ -415,6 +461,51 @@
                 return false;
             }
 
+            /** @function getRouteByName 
+             * Do an AJAX call to remove the selected item that are part of a given collection.
+             *
+             * @returns {JSON}|{boolean}
+             */
+            function deleteRouteByName(e){
+                e.preventDefault();
+                var url = this.href;
+                var $this = $(this);
+                var row = $this.parent().parent();
+                var loadingText = '<i class="fa fa-circle-o-notch fa-spin"></i> Loading...';
+                if ($(this).html() !== loadingText) {
+                    $this.data('original-text', $(this).html());
+                    $this.html(loadingText);
+                    $this.prop('disabled', true);
+                }
+                $.getJSON($SCRIPT_ROOT + '/route/delete', {
+                    route_link: url.split('/').at(-1)
+                }, function(data) {
+                    if (data[0] == "error") {
+                        alert(data[1]);
+                        $this.html($this.data('original-text'));
+                        $this.removeAttr('disabled');
+                    } else {
+                        /** @function showJSONOutput */
+                        showJSONOutput(data, "#result-items");
+                        printRoutesShortcuts()
+                        return data;
+                    }
+                }).done(function (data) {
+                    if (data.result == "OK") {
+                        console.log($this)
+                        $this.html($this.data('original-text'));
+                        $this.removeAttr('disabled');
+                        $('#getRouteJsonOutput').removeAttr('disabled');
+                        row.remove();
+                    }
+                }).fail(function() {
+                    $this.html($this.data('original-text'));
+                    $this.removeAttr('disabled');
+                    alert('Error');
+                });
+
+                return false;
+            }
         </script>
 
         <!-- Dyn routes -->
@@ -423,19 +514,40 @@
                 var html = '';
                 var ids = [];
                 var container = $('#savedRoutesContainer');
+                var table = $('#routes');
                 $.getJSON($SCRIPT_ROOT + '/all', {
                 }, function(data) {
+                    console.log(data);
                     if (data[0] == "error") {
                         alert(data[1]);
                     } else {
                         for (let index = 0; index < data.length; index++) {
                             var id = data[index].href.split('/').at(-1);
                             ids.push(id);
-                            html += '<a id="'+id+'" href="'+data[index].href+'" class="badge badge-primary route-link" target="_blank">'+data[index].title+'</a> ';
+                            html += ''
+                            + '<tr class="small">'
+                                + '<td>'
+                                    +'<span>'+id+'</span>'
+                                + '</td>'
+                                + '<td>'
+                                    +'<span>'+data[index].title+'</span>'
+                                + '</td>'
+                                + '<td class="text-center">'
+                                    +'<a id="'+id+'" href="'+data[index].href+'" class="route-link" target="_blank">'
+                                        +'<span class="btn btn-primary btn-sm md-12 material-icons">visibility</span>'
+                                    +'</a>'
+                                + '</td>'
+                                + '<td class="text-center">'
+                                    +'<a id="'+id+'-remove" href="'+data[index].href+'" class="route-link-remove" target="_blank">'
+                                        +'<span class="btn btn-danger btn-sm md-12 material-icons">delete_outline</span>'
+                                    +'</a>'
+                                + '</td>'
+                            + '</tr>';
                         }
-                        container.html(html);
+                        table.html(html);
                         ids.forEach(element => {
                             $('#'+element).on('click', getRouteByName);
+                            $('#'+element+'-remove').on('click', deleteRouteByName);
                         });
                     }
                 }).fail(function() {
@@ -457,12 +569,19 @@
                 }).addTo(map);
 
                 map.on('click',function(e){
-                    console.log(e.latlng);
                     if ($('#start').hasClass('focus')) {
                         $('#start').val(JSON.stringify([e.latlng.lng, e.latlng.lat]));
+                        if (startMarker != undefined) {
+                            map.removeLayer(startMarker);
+                        };
+                        startMarker = L.marker(e.latlng).addTo(map);
                     }
                     if ($('#end').hasClass('focus')) {
                         $('#end').val(JSON.stringify([e.latlng.lng, e.latlng.lat]));
+                        if (endMarker != undefined) {
+                            map.removeLayer(endMarker);
+                        }
+                        endMarker = L.marker(e.latlng).addTo(map);
                     }
             });
             function loadMap() {
@@ -478,12 +597,19 @@
                 }).addTo(map);
 
                 map.on('click',function(e){
-                    console.log(e.latlng);
                     if ($('#start').hasClass('focus')) {
                         $('#start').val(JSON.stringify([e.latlng.lng, e.latlng.lat]));
+                        if (startMarker != undefined) {
+                            map.removeLayer(startMarker);
+                        };
+                        startMarker = L.marker(e.latlng).addTo(map);
                     }
                     if ($('#end').hasClass('focus')) {
                         $('#end').val(JSON.stringify([e.latlng.lng, e.latlng.lat]));
+                        if (endMarker != undefined) {
+                            map.removeLayer(endMarker);
+                        }
+                        endMarker = L.marker(e.latlng).addTo(map);
                     }
                 });
             }

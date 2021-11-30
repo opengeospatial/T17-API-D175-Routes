@@ -25,7 +25,9 @@ def get_routes(landing_page):
         
     for route in json_api_response["links"]:
         if route["rel"] == "item":
-            element = dict(href=route["href"], title=route["title"])
+            link = route["href"].split('/')
+            routeId = link[-1]
+            element = dict(href=route["href"], title=route["title"], id=routeId)
             routes.append(element)
 
     return routes
