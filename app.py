@@ -69,7 +69,7 @@ def get_route():
         params['preference'] =  preference_from_request
 
     # sending get request and saving the response as response object
-    api_response = requests.post(url = URL, json = params)
+    api_response = requests.post(url = URL, headers = {'Accept': 'application/json'}, json = params)
     # extracting data in json format
     json_api_response = api_response.json()
     # Get features 
@@ -92,7 +92,7 @@ def named_route():
     route_id = request.args.get('route_link')
     target_url = API_BASE_URL+'/routes/'+route_id
     # sending get request and saving the response as response object
-    api_response = requests.get(url = target_url)
+    api_response = requests.get(url = target_url, headers = {'Accept': 'application/json'})
     # extracting data in json format
     json_api_response = api_response.json()
     # Get features 

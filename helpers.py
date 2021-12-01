@@ -6,19 +6,20 @@ from pprint import pprint
 '''
 def get_api_name(landing_page):
     try:
-        api_response = requests.get(url = landing_page, params = {'f':'json'})
+        api_response = requests.get(url = landing_page, headers = {'Accept': 'application/json'}, params = {'f':'json'})
         json_api_response = api_response.json()
     except requests.ConnectionError as exception:
         return False
 
-    return json_api_response["title"]
+    if "title" in json_api_response: return json_api_response["title"]
+    else: return "No title"
 
 def get_routes(landing_page):
     routes = []
     url = landing_page+'/routes'
 
     try:
-        api_response = requests.get(url = url)
+        api_response = requests.get(url = url, headers = {'Accept': 'application/json'})
         json_api_response = api_response.json()
     except requests.ConnectionError as exception:
         return False
