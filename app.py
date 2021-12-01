@@ -6,11 +6,11 @@ from helpers import get_routes, get_api_name
 from flask import Flask, render_template, request, url_for
 app = Flask(__name__)
 
-API_BASE_URL = 'https://dp21.skymantics.com/rimac'
+API_BASE_URL = "http://localhost:5000"
 API_NAME = get_api_name(API_BASE_URL)
-DEFAULT_ZOOM = 3
-DEFAULT_CENTER = [0,0]
-TILESERVER_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+DEFAULT_ZOOM = "10"
+DEFAULT_CENTER = "[-118.246648,34.054343]"
+TILESERVER_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
 
 @app.route('/')
 def index():
@@ -55,13 +55,14 @@ def get_route():
     }
     
     # Optional params 
-    if (request.args.get('max_height') != '' or request.args.get('max_height') != None):
+    if (request.args.get('max_height') != '' and request.args.get('max_height') != None):
         max_height_from_request = request.args.get('max_height')
-        params['maxHeight'] =  max_height_from_request
+        print("Height", max_height_from_request)
+        params['height'] =  max_height_from_request
 
-    if (request.args.get('max_width') != '' or request.args.get('max_width') != None):
-        max_width_from_request = request.args.get('max_width')
-        params['maxWeight'] =  max_width_from_request
+    if (request.args.get('max_width') != '' and request.args.get('max_width') != None):
+        max_weight_from_request = request.args.get('max_width')
+        params['weight'] =  max_weight_from_request
 
     if (request.args.get('preference') != '' or request.args.get('preference') != None):
         preference_from_request = request.args.get('preference')

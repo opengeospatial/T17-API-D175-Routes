@@ -97,8 +97,8 @@
                                     <input type="number" min="0" step="0.01" name="max-height" id="max-height" class="form-control">
                                 </div>
                                 <div class="col-6">
-                                    <label for="max-width">Max weight</label>
-                                    <input type="number" min="0" step="0.01" name="max-width" id="max-width" class="form-control">
+                                    <label for="max-weight">Max weight</label>
+                                    <input type="number" min="0" step="0.01" name="max-weight" id="max-weight" class="form-control">
                                 </div>
                             </div>
                             <div class="row form-group" style="margin-top:40px;">
@@ -249,7 +249,7 @@
                 var start = JSON.parse($('#start').val());
                 var finish = JSON.parse($('#end').val());
                 var maxHeight =  $('#max-height').val();
-                var maxWidth =  $('#max-width').val();
+                var maxWeight =  $('#max-weight').val();
                 var name = $('#name').val();
                 var preferenceType = $('#preference').val();
 
@@ -264,7 +264,7 @@
                     waypoints: JSON.stringify([start, finish]),
                     route_name: name,
                     max_height: (maxHeight.length > 0) ? maxHeight : '',
-                    max_width: (maxWidth.length > 0) ? maxWidth : '',
+                    max_weight: (maxWeight.length > 0) ? maxWeight : '',
                     preference: (preferenceType.length > 0) ? preferenceType : ''
                 }, function(data) {
                     if (data[0] == "error") {
