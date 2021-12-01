@@ -6,7 +6,7 @@ from helpers import get_routes, get_api_name
 from flask import Flask, render_template, request, url_for
 app = Flask(__name__)
 
-API_BASE_URL = "http://localhost:5000"
+API_BASE_URL = "https://rps.ldproxy.net/rps"
 API_NAME = get_api_name(API_BASE_URL)
 DEFAULT_ZOOM = "10"
 DEFAULT_CENTER = "[-118.246648,34.054343]"
@@ -50,8 +50,8 @@ def get_route():
     # Set the API resource url
     URL = API_BASE_URL+"/routes"
     params = {
-        'waypoints':json.loads(waypoints),
         'name': route_name,
+        'waypoints': { 'value': { 'type': 'Multipoint', 'coordinates': json.loads(waypoints) } }
     }
     
     # Optional params 
@@ -68,8 +68,11 @@ def get_route():
         preference_from_request = request.args.get('preference')
         params['preference'] =  preference_from_request
 
+    route_def = { 'inputs': {} }
+    route_def['inputs'] = params
+
     # sending get request and saving the response as response object
-    api_response = requests.post(url = URL, headers = {'Accept': 'application/json'}, json = params)
+    api_response = requests.post(url = URL, headers = {'Accept': 'application/geo+json', 'content-type': 'application/json'}, json = route_def)
     # extracting data in json format
     json_api_response = api_response.json()
     # Get features 
@@ -92,7 +95,7 @@ def named_route():
     route_id = request.args.get('route_link')
     target_url = API_BASE_URL+'/routes/'+route_id
     # sending get request and saving the response as response object
-    api_response = requests.get(url = target_url, headers = {'Accept': 'application/json'})
+    api_response = requests.get(url = target_url, headers = {'Accept': 'application/geo+json'})
     # extracting data in json format
     json_api_response = api_response.json()
     # Get features 
