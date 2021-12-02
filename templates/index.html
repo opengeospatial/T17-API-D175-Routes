@@ -235,7 +235,10 @@
             startMarker = {};
             endMarker = {};
             var routePoints = [];
-            var obstaclePoints = [];
+            var obstaclePoints = {
+                type: 'MultiPolygon',
+                coordinates: []
+            };
 
             $(function() {
                 // get collection list
@@ -577,7 +580,10 @@
                 map.addLayer(drawnItems);
                 var drawControl = new L.Control.Draw({
                     draw: {
-                        marker: false
+                        marker: false,
+                        circle: false,
+                        polyline: false,
+                        circlemarker: false
                     },
                     edit: {
                         featureGroup: drawnItems,
@@ -588,7 +594,7 @@
                 map.on('draw:created', function(e) {
                     // Each time a feaute is created, it's added to the over arching feature group
                     drawnItems.addLayer(e.layer);
-                    obstaclePoints = e.layer.toGeoJSON().geometry.coordinates;
+                    obstaclePoints.coordinates.push(e.layer.toGeoJSON().geometry.coordinates);
                 });
 
                 map.on('click',function(e){
