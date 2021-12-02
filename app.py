@@ -6,7 +6,8 @@ from helpers import get_routes, get_api_name
 from flask import Flask, render_template, request, url_for
 app = Flask(__name__)
 
-API_BASE_URL = "http://localhost:5000"
+#API_BASE_URL = "http://localhost:5000"
+API_BASE_URL = "https://rps.ldproxy.net/rps"
 API_NAME = get_api_name(API_BASE_URL)
 DEFAULT_ZOOM = "10"
 DEFAULT_CENTER = "[-118.246648,34.054343]"
@@ -66,8 +67,8 @@ def get_route():
         preference_from_request = request.args.get('preference')
         params['preference'] =  preference_from_request
 
-    if (request.args.get('obstacles') != '' or request.args.get('obstacles') != None):
-        obstacles_from_request = request.args.get('obstacles')
+    obstacles_from_request = json.loads(request.args.get('obstacles'))
+    if len(obstacles_from_request["coordinates"]) > 2:
         params['obstacles'] =  obstacles_from_request
 
     route_def = { 'inputs': {} }
