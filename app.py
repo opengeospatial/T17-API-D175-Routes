@@ -15,7 +15,6 @@ TILESERVER_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
 @app.route('/')
 def index():
     ROUTES = get_routes(API_BASE_URL)
-    pprint(ROUTES)
     if not request.root_url:
         # this assumes that the 'index' view function handles the path '/'
         request.root_url = url_for('index', _external=True)

@@ -232,6 +232,7 @@
 
             startMarker = {};
             endMarker = {};
+            var routePoints = [];
 
             $(function() {
                 // get collection list
@@ -261,7 +262,7 @@
                     $this.prop('disabled', true);
                 }
                 $.getJSON($SCRIPT_ROOT + 'route', {
-                    waypoints: JSON.stringify([start, finish]),
+                    waypoints: JSON.stringify(routePoints),
                     route_name: name,
                     max_height: (maxHeight.length > 0) ? maxHeight : '',
                     max_weight: (maxWeight.length > 0) ? maxWeight : '',
@@ -569,19 +570,31 @@
                 }).addTo(map);
 
                 map.on('click',function(e){
-                    if ($('#start').hasClass('focus')) {
+                    if ($('#start').hasClass('focus') && $('#start').val() == '') {
                         $('#start').val(JSON.stringify([e.latlng.lng, e.latlng.lat]));
                         if (startMarker != undefined) {
                             map.removeLayer(startMarker);
                         };
                         startMarker = L.marker(e.latlng).addTo(map);
+                        routePoints.push([e.latlng.lng, e.latlng.lat]);
+                    } else if ($('#start').hasClass('focus') && $('#start').val() !== '') {
+                        L.marker(e.latlng).addTo(map);
+                        routePoints.push([e.latlng.lng, e.latlng.lat]);
                     }
-                    if ($('#end').hasClass('focus')) {
+                    if ($('#end').hasClass('focus') && $('#end').val() == '') {
                         $('#end').val(JSON.stringify([e.latlng.lng, e.latlng.lat]));
                         if (endMarker != undefined) {
                             map.removeLayer(endMarker);
                         }
                         endMarker = L.marker(e.latlng).addTo(map);
+                        routePoints.push([e.latlng.lng, e.latlng.lat]);
+                    } else if ($('#end').hasClass('focus') && $('#end') !== '') {
+                        if (endMarker != undefined) {
+                            map.removeLayer(endMarker);
+                        }
+                        endMarker = L.marker(e.latlng).addTo(map);
+                        routePoints.splice(-1);
+                        routePoints.push([e.latlng.lng, e.latlng.lat]);
                     }
             });
             function loadMap() {
@@ -597,19 +610,31 @@
                 }).addTo(map);
 
                 map.on('click',function(e){
-                    if ($('#start').hasClass('focus')) {
+                    if ($('#start').hasClass('focus') && $('#start').val() == '') {
                         $('#start').val(JSON.stringify([e.latlng.lng, e.latlng.lat]));
                         if (startMarker != undefined) {
                             map.removeLayer(startMarker);
                         };
                         startMarker = L.marker(e.latlng).addTo(map);
+                        routePoints.push([e.latlng.lng, e.latlng.lat]);
+                    } else if ($('#start').hasClass('focus') && $('#start').val() !== '') {
+                        L.marker(e.latlng).addTo(map);
+                        routePoints.push([e.latlng.lng, e.latlng.lat]);
                     }
-                    if ($('#end').hasClass('focus')) {
+                    if ($('#end').hasClass('focus') && $('#end').val() == '') {
                         $('#end').val(JSON.stringify([e.latlng.lng, e.latlng.lat]));
                         if (endMarker != undefined) {
                             map.removeLayer(endMarker);
                         }
                         endMarker = L.marker(e.latlng).addTo(map);
+                        routePoints.push([e.latlng.lng, e.latlng.lat]);
+                    } else if ($('#end').hasClass('focus') && $('#end') !== '') {
+                        if (endMarker != undefined) {
+                            map.removeLayer(endMarker);
+                        }
+                        endMarker = L.marker(e.latlng).addTo(map);
+                        routePoints.splice(-1);
+                        routePoints.push([e.latlng.lng, e.latlng.lat]);
                     }
                 });
             }
