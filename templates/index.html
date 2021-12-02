@@ -20,6 +20,8 @@
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
          <!-- Make sure you put this AFTER Leaflet's CSS -->
         <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" integrity="sha512-gc3xjCmIy673V6MyOAZhIW93xhM9ei1I+gLbmFjUHIjocENRsLX/QUE1htk5q1XV2D/iie/VQ8DXI6Vu8bexvQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
         
         <!-- Custom -->
         <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
@@ -233,6 +235,10 @@
             startMarker = {};
             endMarker = {};
             var routePoints = [];
+            var obstaclePoints = {
+                type: 'MultiPolygon',
+                coordinates: []
+            };
 
             $(function() {
                 // get collection list
@@ -263,6 +269,7 @@
                 }
                 $.getJSON($SCRIPT_ROOT + 'route', {
                     waypoints: JSON.stringify(routePoints),
+                    obstacles: JSON.stringify(obstaclePoints),
                     route_name: name,
                     max_height: (maxHeight.length > 0) ? maxHeight : '',
                     max_weight: (maxWeight.length > 0) ? maxWeight : '',
@@ -569,6 +576,27 @@
                     attribution: '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors and <a href="https://skymantics.com">Skymantics</a>'
                 }).addTo(map);
 
+                var drawnItems = new L.FeatureGroup();
+                map.addLayer(drawnItems);
+                var drawControl = new L.Control.Draw({
+                    draw: {
+                        marker: false,
+                        circle: false,
+                        polyline: false,
+                        circlemarker: false
+                    },
+                    edit: {
+                        featureGroup: drawnItems,
+                        edit: true
+                    }
+                });
+                map.addControl(drawControl);
+                map.on('draw:created', function(e) {
+                    // Each time a feaute is created, it's added to the over arching feature group
+                    drawnItems.addLayer(e.layer);
+                    obstaclePoints.coordinates.push(e.layer.toGeoJSON().geometry.coordinates);
+                });
+
                 map.on('click',function(e){
                     if ($('#start').hasClass('focus') && $('#start').val() == '') {
                         $('#start').val(JSON.stringify([e.latlng.lng, e.latlng.lat]));
@@ -597,6 +625,7 @@
                         routePoints.push([e.latlng.lng, e.latlng.lat]);
                     }
             });
+
             function loadMap() {
                 // Set map center and block zoom
                 map = L.map('mapid', {
@@ -636,6 +665,24 @@
                         routePoints.splice(-1);
                         routePoints.push([e.latlng.lng, e.latlng.lat]);
                     }
+                });
+                
+                var drawnItems = new L.FeatureGroup();
+                map.addLayer(drawnItems);
+                var drawControl = new L.Control.Draw({
+                    draw: {
+                        marker: false
+                    },
+                    edit: {
+                        featureGroup: drawnItems,
+                        edit: true
+                    }
+                });
+                map.addControl(drawControl);
+                map.on('draw:created', function(e) {
+                    // Each time a feaute is created, it's added to the over arching feature group
+                    drawnItems.addLayer(e.layer);
+                    obstaclePoints = e.layer.toGeoJSON().geometry.coordinates;
                 });
             }
 
