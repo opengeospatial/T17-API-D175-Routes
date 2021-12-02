@@ -6,7 +6,7 @@ from helpers import get_routes, get_api_name
 from flask import Flask, render_template, request, url_for
 app = Flask(__name__)
 
-API_BASE_URL = "https://rps.ldproxy.net/rps"
+API_BASE_URL = "https://dp21.skymantics.com/rimac"
 API_NAME = get_api_name(API_BASE_URL)
 DEFAULT_ZOOM = "10"
 DEFAULT_CENTER = "[-118.246648,34.054343]"
@@ -41,18 +41,26 @@ def get_route():
     else:
         route_name_from_request = None
 
+    if (request.args.get('obstacles') != '' or request.args.get('obstacles') != None):
+        obstacles_from_request = request.args.get('obstacles')
+    else:
+        obstacles_from_request = None
+
     # Get the waypoints from the request
     waypoints = waypoints_from_request
     # Get the route name from the request
     route_name = route_name_from_request
+    # Get the obstacles
+    obstacles = obstacles_from_request
 
     # Set the API resource url
     URL = API_BASE_URL+"/routes"
     params = {
+        'waypoints':json.loads(waypoints),
         'name': route_name,
-        'waypoints': { 'value': { 'type': 'Multipoint', 'coordinates': json.loads(waypoints) } }
+        'obstacles': obstacles
     }
-    
+
     # Optional params 
     if (request.args.get('max_height') != '' and request.args.get('max_height') != None):
         max_height_from_request = request.args.get('max_height')
@@ -67,11 +75,7 @@ def get_route():
         preference_from_request = request.args.get('preference')
         params['preference'] =  preference_from_request
 
-    route_def = { 'inputs': {} }
-    route_def['inputs'] = params
-
-    # sending get request and saving the response as response object
-    api_response = requests.post(url = URL, headers = {'Accept': 'application/geo+json', 'content-type': 'application/json'}, json = route_def)
+    api_response = requests.post(url = URL, json = params)
     # extracting data in json format
     json_api_response = api_response.json()
     # Get features 
