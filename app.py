@@ -1,21 +1,24 @@
 import json
 import requests
+import os
 from pprint import pp, pprint
 from helpers import get_routes, get_api_name
 
 from flask import Flask, render_template, request, url_for
 app = Flask(__name__)
 
-#API_BASE_URL = "http://localhost:5000"
-API_BASE_URL = "https://rps.ldproxy.net/rps"
+API_BASE_URL = "http://localhost:5000"
+#API_BASE_URL = "https://rps.ldproxy.net/rps"
 API_NAME = get_api_name(API_BASE_URL)
 DEFAULT_ZOOM = "10"
 DEFAULT_CENTER = "[-118.246648,34.054343]"
 TILESERVER_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
 
+LOCAL_ROUTE_STORAGE = "./routes/"
+
 @app.route('/')
 def index():
-    ROUTES = get_routes(API_BASE_URL)
+    ROUTES = get_routes(API_BASE_URL, LOCAL_ROUTE_STORAGE)
     if not request.root_url:
         # this assumes that the 'index' view function handles the path '/'
         request.root_url = url_for('index', _external=True)
@@ -68,11 +71,13 @@ def get_route():
         params['preference'] =  preference_from_request
 
     obstacles_from_request = json.loads(request.args.get('obstacles'))
-    if len(obstacles_from_request["coordinates"]) > 2:
-        params['obstacles'] =  obstacles_from_request
+    if len(obstacles_from_request['coordinates']) == 1 and len(obstacles_from_request['coordinates'][0][0]) > 2:
+        params['obstacles'] =  { 'value': obstacles_from_request }
 
     route_def = { 'inputs': {} }
     route_def['inputs'] = params
+
+    print(params)
 
     api_response = requests.post(url = URL, headers = {'Accept': 'application/geo+json', 'content-type': 'application/json'}, json = route_def)
     # extracting data in json format
@@ -81,12 +86,24 @@ def get_route():
     json_fearures_list = json_api_response["features"]
     # Parsing to string
     features_list = json.dumps(json_fearures_list)
+
+    # Save a local copy of the route
+    if "links" in json_api_response:
+        for route in json_api_response["links"]:
+            if route["rel"] == "self":
+                link = route["href"].split('/')
+                routeId = link[-1]
+                f = open(LOCAL_ROUTE_STORAGE + routeId + '.json', 'w+', encoding='utf8')
+                json.dump(json_api_response, f, indent=4)
+                f.close()
+                break
+    
     # Returning string
     return features_list
 
 @app.route('/all')
 def all_routes():
-    json_routes_list = get_routes(API_BASE_URL)
+    json_routes_list = get_routes(API_BASE_URL, LOCAL_ROUTE_STORAGE)
     # Parsing to string
     routes_list = json.dumps(json_routes_list)
     # Returning string
@@ -95,11 +112,28 @@ def all_routes():
 @app.route('/route/named')
 def named_route():
     route_id = request.args.get('route_link')
-    target_url = API_BASE_URL+'/routes/'+route_id
-    # sending get request and saving the response as response object
-    api_response = requests.get(url = target_url, headers = {'Accept': 'application/geo+json'})
-    # extracting data in json format
-    json_api_response = api_response.json()
+    target_url = API_BASE_URL+'/routes/' + route_id
+    
+    try:
+        # sending get request and saving the response as response object
+        api_response = requests.get(url = target_url, headers = {'Accept': 'application/geo+json'})
+        # extracting data in json format
+        json_api_response = api_response.json()
+
+        # Save a local copy of the route
+        f = open(LOCAL_ROUTE_STORAGE + route_id + '.json', 'w+', encoding='utf8')
+        json.dump(json_api_response, f, indent=4)
+        f.close()
+
+    except:
+        # if network problem, try to load a local copy
+        try:
+            f = open(LOCAL_ROUTE_STORAGE + route_id + '.json', "r+")
+            json_api_response = json.load(f)
+            f.close()
+        except requests.ConnectionError as exception:
+            return ""
+
     # Get features 
     json_fearures_list = json_api_response["features"]
     # Parsing to string
@@ -109,12 +143,20 @@ def named_route():
     
 @app.route('/route/delete')
 def delete_route():
-    route_id = request.args.get('route_link')
-    target_url = API_BASE_URL+'/routes/'+route_id
-    # sending get request and saving the response as response object
-    api_response = requests.delete(url = target_url)
-    # extracting data in json format
-    json_api_response = api_response.json()
-    # TODO: Improve the returned data
-    return dict(result = 'OK')
-    
+    try:
+        route_id = request.args.get('route_link')
+        target_url = API_BASE_URL+'/routes/'+route_id
+        # sending get request and saving the response as response object
+        api_response = requests.delete(url = target_url)
+        # extracting data in json format
+        json_api_response = api_response.json()
+        # try to delete a local copy, if exists
+        try:
+            os.remove(LOCAL_ROUTE_STORAGE + route_id + '.json')
+        except:
+            print("No local copy of ", route_id)
+        # TODO: Improve the returned data
+        return dict(result = 'OK')
+    except requests.ConnectionError as exception:
+        return dict(result = 'No Internet connection')
+
