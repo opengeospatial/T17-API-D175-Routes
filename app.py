@@ -62,8 +62,8 @@ def get_route():
         max_height_from_request = request.args.get('max_height')
         params['height'] =  max_height_from_request
 
-    if (request.args.get('max_width') != '' and request.args.get('max_width') != None):
-        max_weight_from_request = request.args.get('max_width')
+    if (request.args.get('max_weight') != '' and request.args.get('max_weight') != None):
+        max_weight_from_request = request.args.get('max_weight')
         params['weight'] =  max_weight_from_request
 
     if (request.args.get('preference') != '' or request.args.get('preference') != None):
