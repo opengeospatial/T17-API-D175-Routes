@@ -8,7 +8,6 @@ from flask import Flask, render_template, request, url_for
 app = Flask(__name__)
 
 API_BASE_URL = "https://routingsprint.skymantics.com"
-#API_BASE_URL = "https://rps.ldproxy.net/rps"
 API_NAME = get_api_name(API_BASE_URL)
 DEFAULT_ZOOM = "10"
 DEFAULT_CENTER = "[-118.246648,34.054343]"
