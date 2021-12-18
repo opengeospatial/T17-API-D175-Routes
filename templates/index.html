@@ -242,17 +242,17 @@
 
             $(function() {
                 // get collection list
-                $('button#getRoute').bind('click', getRoutes)
+                $('button#getRoute').bind('click', getRoutesFromCreateRouteRequest)
 
             });
 
-            /** @function getRoutes 
-             * Do an AJAX call to get all the items that are part of a given collection.
+            /** @function getRoutesFromCreateRouteRequest 
+             * Do an AJAX call to get all the items that are part of a create route request given collection.
              *
              * @returns {JSON}|{boolean}
              */
-            function getRoutes(){
-                refreshMap();
+            function getRoutesFromCreateRouteRequest(){
+                removeMapLayers();
                 var start = JSON.parse($('#start').val());
                 var finish = JSON.parse($('#end').val());
                 var maxHeight =  $('#max-height').val();
@@ -275,6 +275,7 @@
                     max_weight: (maxWeight.length > 0) ? maxWeight : '',
                     preference: (preferenceType.length > 0) ? preferenceType : ''
                 }, function(data) {
+                    console.log(data)
                     if (data[0] == "error") {
                         alert(data[1]);
                         $this.html($this.data('original-text'));
@@ -413,7 +414,7 @@
                     }
                     ls.bindTooltip(content).addTo(map);
                 });
-                printRoutesShortcuts();
+                getAndPrintAllDefinedRoutes();
             }
         </script>
 
@@ -423,13 +424,13 @@
             $('.route-link-remove').on('click', deleteRouteByName);
             
             /** @function getRouteByName 
-             * Do an AJAX call to get all the items that are part of a given collection.
+             * Do an AJAX call to get a route by its id.
              *
              * @returns {JSON}|{boolean}
              */
              function getRouteByName(e){
                 e.preventDefault();
-                refreshMap();
+                removeMapLayers();
                 var url = this.href;
                 var $this = $(this);
                 var loadingText = '<i class="fa fa-circle-o-notch fa-spin"></i> Loading...';
@@ -470,7 +471,7 @@
             }
 
             /** @function getRouteByName 
-             * Do an AJAX call to remove the selected item that are part of a given collection.
+             * Do an AJAX call to remove the selected route by its id.
              *
              * @returns {JSON}|{boolean}
              */
@@ -495,7 +496,7 @@
                     } else {
                         /** @function showJSONOutput */
                         showJSONOutput(data, "#result-items");
-                        printRoutesShortcuts()
+                        getAndPrintAllDefinedRoutes()
                         return data;
                     }
                 }).done(function (data) {
@@ -518,7 +519,7 @@
 
         <!-- Dyn routes -->
         <script>
-            function printRoutesShortcuts() {
+            function getAndPrintAllDefinedRoutes() {
                 var html = '';
                 var ids = [];
                 var container = $('#savedRoutesContainer');
@@ -626,6 +627,18 @@
                     }
             });
 
+            $('#start').on('click', function() {
+                $('#start').addClass('focus');
+                $('#end').removeClass('focus'); 
+            });
+            $('#end').on('click', function() {
+                $('#start').removeClass('focus');
+                $('#end').addClass('focus'); 
+            });
+            
+            /** @function loadMap 
+             * Generate a new map.
+             */
             function loadMap() {
                 // Set map center and block zoom
                 map = L.map('mapid', {
@@ -686,16 +699,10 @@
                 });
             }
 
-            $('#start').on('click', function() {
-                $('#start').addClass('focus');
-                $('#end').removeClass('focus'); 
-            });
-            $('#end').on('click', function() {
-                $('#start').removeClass('focus');
-                $('#end').addClass('focus'); 
-            });
-
-            function refreshMap()
+            /** @function removeMapLayers 
+             * Remove each map layer.
+             */
+            function removeMapLayers()
             {
                 map.eachLayer(function(point){
                     map.remove();
