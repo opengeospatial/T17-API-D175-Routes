@@ -73,8 +73,6 @@ def get_route():
     route_def = { 'inputs': {} }
     route_def['inputs'] = params
 
-    print(params)
-
     api_response = requests.post(url = URL, headers = {'Accept': 'application/geo+json', 'content-type': 'application/json'}, json = route_def)
     # extracting data in json format
     json_api_response = api_response.json()

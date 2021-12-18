@@ -64,24 +64,25 @@
                                 <div class="row form-group">
                                     <div class="col-12">
                                         <label for="name">Name</label>
-                                        <input autocomplete="off"  type="text" name="name" id="name" class="form-control">
+                                        <input autocomplete="off"  type="text" name="name" id="name" class="form-control input">
                                         <small>Use this field to create and save a new named route</small>
                                     </div>
                                 </div>
                                 <div class="row form-group">
                                     <div class="col-6">
-                                       <label for="start">Start</label>
-                                       <input autocomplete="off"  type="text" name="start" id="start" class="form-control">
+                                       <button id="startRouteDefinition" class="btn btn-success"><span>Start route definition</span> <span class="material-icons float-right">play_arrow</span></button>
+                                       <!-- <label for="start">Start</label> -->
+                                       <input autocomplete="off"  type="hidden" name="start" id="start" class="form-control input">
                                     </div>
                                     <div class="col-6">
-                                        <label for="end">End</label>
-                                        <input autocomplete="off"  type="text" name="end" id="end" class="form-control">
+                                       <button id="getRoute" disabled class="btn btn-danger disabled"><span>Save route definition</span> <span class="material-icons float-right">stop</span></button>
+                                        <!-- <label for="end">End</label> -->
+                                        <input autocomplete="off"  type="hidden" name="end" id="end" class="form-control input">
                                     </div>
                                 </div>
 
                             </div>
                             <div class="card-footer text-muted">
-                                <button id="getRoute" class="btn btn-primary">Get route</button>
                                 <button id="getRouteJsonOutput" type="button" disabled class="btn btn-primary" data-toggle="modal" data-target="#getRouteJsonOutputModal">Show JSON output</button>
                             </div>
                         </div>
@@ -96,17 +97,17 @@
                             <div class="row form-group">
                                 <div class="col-6">
                                     <label for="max-height">Max height</label>
-                                    <input autocomplete="off"  type="number" min="0" step="0.01" name="max-height" id="max-height" class="form-control">
+                                    <input autocomplete="off"  type="number" min="0" step="0.01" name="max-height" id="max-height" class="form-control input">
                                 </div>
                                 <div class="col-6">
                                     <label for="max-weight">Max weight</label>
-                                    <input autocomplete="off"  type="number" min="0" step="0.01" name="max-weight" id="max-weight" class="form-control">
+                                    <input autocomplete="off"  type="number" min="0" step="0.01" name="max-weight" id="max-weight" class="form-control input">
                                 </div>
                             </div>
                             <div class="row form-group" style="margin-top:40px;">
                                 <div class="col-12">
                                     <label for="preference">Preference</label>
-                                    <select name="preference" id="preference" class="form-control">
+                                    <select name="preference" id="preference" class="form-control input">
                                         <option value="fastest">Fastest</option>
                                         <option value="shortest">Shortest</option>
                                     </select>
@@ -206,9 +207,57 @@
         <!-- Document root -->
         <script>
             var map;
+            var formInputs = document.querySelectorAll('.form-control.input');
             $SCRIPT_ROOT = {{request.root_url|tojson|safe}};
             $SCRIPT_ZOOM = {{zoom}};
             $DEFAULT_CENTER = {{center}};
+        </script>
+
+        <!-- Controls JS -->
+        <script>
+            document.getElementById('startRouteDefinition').addEventListener('click', prepareRouteCreation)
+            document.getElementById('getRoute').addEventListener('click', prepareFinishRouteCreation)
+            function prepareRouteCreation(e) {
+                e.preventDefault();
+                removeMapLayers();
+                // Enable all inputs
+                formInputs.forEach(input => enableInput(input));
+                // Enable "save" button
+                var saveButton = document.getElementById('getRoute');
+                saveButton.disabled = false;
+                saveButton.classList.remove('disabled');
+                // Disable "start" button
+                var startButton = document.getElementById('startRouteDefinition');
+                startButton.disabled = true;
+                startButton.classList.add('disabled');
+            }
+
+            function prepareFinishRouteCreation(e) {
+                e.preventDefault();
+                // Enable all inputs
+                formInputs.forEach(input => disableInput(input));
+                // Enable "save" button
+                var saveButton = document.getElementById('getRoute');
+                saveButton.disabled = true;
+                saveButton.classList.add('disabled');
+                // Disable "start" button
+                var startButton = document.getElementById('startRouteDefinition');
+                startButton.disabled = false;
+                startButton.classList.remove('disabled');
+            }
+
+            function disableInput(element) {
+                element.disabled = true;
+                element.classList.add('disabled');
+            }
+
+            function enableInput(element) {
+                element.disabled = false;
+                element.classList.remove('disabled');
+                if (element.type !== 'select-one') {
+                    element.value = '';
+                }
+            }
         </script>
 
         <!-- Routes JS -->
@@ -242,19 +291,17 @@
 
             $(function() {
                 // get collection list
-                $('button#getRoute').bind('click', getRoutesFromCreateRouteRequest)
+                $('button#getRoute').bind('click', saveAndGetRoutesFromCreateRouteRequest)
 
             });
 
-            /** @function getRoutesFromCreateRouteRequest 
-             * Do an AJAX call to get all the items that are part of a create route request given collection.
+            /** @function saveAndGetRoutesFromCreateRouteRequest 
+             * Do an AJAX call to get all the items that are part of a "create route" request given collection.
              *
              * @returns {JSON}|{boolean}
              */
-            function getRoutesFromCreateRouteRequest(){
+            function saveAndGetRoutesFromCreateRouteRequest(){
                 removeMapLayers();
-                var start = JSON.parse($('#start').val());
-                var finish = JSON.parse($('#end').val());
                 var maxHeight =  $('#max-height').val();
                 var maxWeight =  $('#max-weight').val();
                 var name = $('#name').val();
@@ -275,7 +322,6 @@
                     max_weight: (maxWeight.length > 0) ? maxWeight : '',
                     preference: (preferenceType.length > 0) ? preferenceType : ''
                 }, function(data) {
-                    console.log(data)
                     if (data[0] == "error") {
                         alert(data[1]);
                         $this.html($this.data('original-text'));
@@ -294,6 +340,7 @@
                         $this.html($this.data('original-text'));
                         $this.removeAttr('disabled');
                         $('#getRouteJsonOutput').removeAttr('disabled');
+                        routePoints = [];
                     }
                 }).fail(function() {
                     $this.html($this.data('original-text'));
@@ -349,7 +396,6 @@
                 // Put beautified json
                 // $(target).text(JSON.stringify(data, null, 4));
                 $("#selectedCollectionId").text(data.id)
-                console.log(data);
                 $(target).empty().simpleJson({ jsonObject: data });
             }
 
@@ -379,7 +425,6 @@
                     // Add tooltip to the point
                     var content = '<h4>'+point.id+' properties:</h4>';
                     var counter = 0;
-                    console.log(point);
                     for(var key in point.properties) {
                         if(point.properties.hasOwnProperty(key) && counter < 5) {
                             content += '<p>'+key+':'+point.properties[key]+'<p>';
@@ -501,7 +546,6 @@
                     }
                 }).done(function (data) {
                     if (data.result == "OK") {
-                        console.log($this)
                         $this.html($this.data('original-text'));
                         $this.removeAttr('disabled');
                         $('#getRouteJsonOutput').removeAttr('disabled');
@@ -526,7 +570,6 @@
                 var table = $('#routes');
                 $.getJSON($SCRIPT_ROOT + '/all', {
                 }, function(data) {
-                    console.log(data);
                     if (data[0] == "error") {
                         alert(data[1]);
                     } else {
@@ -567,6 +610,8 @@
 
         <!-- Map JS -->
         <script>
+            // Disable inputs by default
+            formInputs.forEach(input => disableInput(input));
             var map = L.map('mapid', {
                     scrollWheelZoom: false,
                     // This is just a workaround to be used with long,lat instead of lat,long
@@ -599,47 +644,21 @@
                 });
 
                 map.on('click',function(e){
-                    if ($('#start').hasClass('focus') && $('#start').val() == '') {
-                        $('#start').val(JSON.stringify([e.latlng.lng, e.latlng.lat]));
-                        if (startMarker != undefined) {
-                            map.removeLayer(startMarker);
-                        };
-                        startMarker = L.marker(e.latlng).addTo(map);
-                        routePoints.push([e.latlng.lng, e.latlng.lat]);
-                    } else if ($('#start').hasClass('focus') && $('#start').val() !== '') {
-                        L.marker(e.latlng).addTo(map);
-                        routePoints.push([e.latlng.lng, e.latlng.lat]);
-                    }
-                    if ($('#end').hasClass('focus') && $('#end').val() == '') {
-                        $('#end').val(JSON.stringify([e.latlng.lng, e.latlng.lat]));
-                        if (endMarker != undefined) {
-                            map.removeLayer(endMarker);
+                    var startButton = document.getElementById('startRouteDefinition');
+                    if (startButton.disabled == true) {
+                        if (drawControl._toolbars.draw._activeMode == null) {
+                            L.marker(e.latlng).addTo(map);
+                            routePoints.push([e.latlng.lng, e.latlng.lat]);
                         }
-                        endMarker = L.marker(e.latlng).addTo(map);
-                        routePoints.push([e.latlng.lng, e.latlng.lat]);
-                    } else if ($('#end').hasClass('focus') && $('#end') !== '') {
-                        if (endMarker != undefined) {
-                            map.removeLayer(endMarker);
-                        }
-                        endMarker = L.marker(e.latlng).addTo(map);
-                        routePoints.splice(-1);
-                        routePoints.push([e.latlng.lng, e.latlng.lat]);
                     }
-            });
+                });
 
-            $('#start').on('click', function() {
-                $('#start').addClass('focus');
-                $('#end').removeClass('focus'); 
-            });
-            $('#end').on('click', function() {
-                $('#start').removeClass('focus');
-                $('#end').addClass('focus'); 
-            });
-            
             /** @function loadMap 
              * Generate a new map.
              */
             function loadMap() {
+                // Disable inputs by default
+                formInputs.forEach(input => disableInput(input));
                 // Set map center and block zoom
                 map = L.map('mapid', {
                     scrollWheelZoom: false,
@@ -652,34 +671,15 @@
                 }).addTo(map);
 
                 map.on('click',function(e){
-                    if ($('#start').hasClass('focus') && $('#start').val() == '') {
-                        $('#start').val(JSON.stringify([e.latlng.lng, e.latlng.lat]));
-                        if (startMarker != undefined) {
-                            map.removeLayer(startMarker);
-                        };
-                        startMarker = L.marker(e.latlng).addTo(map);
-                        routePoints.push([e.latlng.lng, e.latlng.lat]);
-                    } else if ($('#start').hasClass('focus') && $('#start').val() !== '') {
-                        L.marker(e.latlng).addTo(map);
-                        routePoints.push([e.latlng.lng, e.latlng.lat]);
-                    }
-                    if ($('#end').hasClass('focus') && $('#end').val() == '') {
-                        $('#end').val(JSON.stringify([e.latlng.lng, e.latlng.lat]));
-                        if (endMarker != undefined) {
-                            map.removeLayer(endMarker);
+                    var startButton = document.getElementById('startRouteDefinition');
+                    if (startButton.disabled == true) {
+                        if (drawControl._toolbars.draw._activeMode == null) {
+                            L.marker(e.latlng).addTo(map);
+                            routePoints.push([e.latlng.lng, e.latlng.lat]);
                         }
-                        endMarker = L.marker(e.latlng).addTo(map);
-                        routePoints.push([e.latlng.lng, e.latlng.lat]);
-                    } else if ($('#end').hasClass('focus') && $('#end') !== '') {
-                        if (endMarker != undefined) {
-                            map.removeLayer(endMarker);
-                        }
-                        endMarker = L.marker(e.latlng).addTo(map);
-                        routePoints.splice(-1);
-                        routePoints.push([e.latlng.lng, e.latlng.lat]);
                     }
                 });
-                
+
                 var drawnItems = new L.FeatureGroup();
                 map.addLayer(drawnItems);
                 var drawControl = new L.Control.Draw({
@@ -704,6 +704,7 @@
              */
             function removeMapLayers()
             {
+                console.log('limpiando');
                 map.eachLayer(function(point){
                     map.remove();
                     map.removeLayer(point)
