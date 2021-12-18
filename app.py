@@ -2,18 +2,17 @@ import json
 import requests
 import os
 from pprint import pp, pprint
-from helpers import get_routes, get_api_name
+from helpers import get_routes, get_api_name, create_dir_if_not_exists, store_local_copy_of_routes
 
 from flask import Flask, render_template, request, url_for
 app = Flask(__name__)
 
-API_BASE_URL = "http://localhost:5000"
+API_BASE_URL = "https://routingsprint.skymantics.com"
 #API_BASE_URL = "https://rps.ldproxy.net/rps"
 API_NAME = get_api_name(API_BASE_URL)
 DEFAULT_ZOOM = "10"
 DEFAULT_CENTER = "[-118.246648,34.054343]"
 TILESERVER_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-
 LOCAL_ROUTE_STORAGE = "./routes/"
 
 @app.route('/')
@@ -31,9 +30,7 @@ def index():
         center=DEFAULT_CENTER
     )
 
-@app.route('/route', defaults={
-
-})
+@app.route('/route')
 def get_route():
     if (request.args.get('waypoints') != '' or request.args.get('waypoints') != None):
         waypoints_from_request = request.args.get('waypoints')
@@ -89,14 +86,8 @@ def get_route():
 
     # Save a local copy of the route
     if "links" in json_api_response:
-        for route in json_api_response["links"]:
-            if route["rel"] == "self":
-                link = route["href"].split('/')
-                routeId = link[-1]
-                f = open(LOCAL_ROUTE_STORAGE + routeId + '.json', 'w+', encoding='utf8')
-                json.dump(json_api_response, f, indent=4)
-                f.close()
-                break
+        create_dir_if_not_exists(LOCAL_ROUTE_STORAGE)
+        store_local_copy_of_routes(json_api_response, LOCAL_ROUTE_STORAGE)
     
     # Returning string
     return features_list

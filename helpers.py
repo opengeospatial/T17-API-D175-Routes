@@ -60,3 +60,15 @@ def get_local_routes(local_route_storage):
 
     return routes
     
+def create_dir_if_not_exists(path):
+    if os.path.exists(path) == False:
+        os.makedirs(path)
+
+def store_local_copy_of_routes(validJsonResponse, path):
+    for route in validJsonResponse["links"]:
+        if route["rel"] == "self":
+            link = route["href"].split('/')
+            routeId = link[-1]
+            f = open(path + routeId + '.json', 'w+', encoding='utf8')
+            json.dump(validJsonResponse, f, indent=4)
+            f.close()
